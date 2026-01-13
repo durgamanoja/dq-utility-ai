@@ -7,6 +7,6 @@ const app = new cdk.App();
 
 // Deploy the merged stack that resolves cyclic dependencies
 const mergedStack = new DQUtilityMergedStack(app, 'DQUtilityMergedStack', {
-  env: {account: '752105949551', region: 'us-east-1'},
+  env: {account: '<AWS ACCOUNT>', region: 'us-east-1'},
   pollIntervalSeconds: 60,
 });
