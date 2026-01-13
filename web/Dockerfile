@@ -19,7 +19,6 @@ COPY app.py ${LAMBDA_TASK_ROOT}/
 COPY lambda_handler.py ${LAMBDA_TASK_ROOT}/
 COPY websocket_handler.py ${LAMBDA_TASK_ROOT}/
 COPY oauth.py ${LAMBDA_TASK_ROOT}/
-COPY arch.png ${LAMBDA_TASK_ROOT}/
 
 # Set Lambda handler
 CMD ["lambda_handler.handler"]
