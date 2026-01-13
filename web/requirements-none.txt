@@ -1,0 +1,1 @@
+# No dependencies - testing basic Python handler

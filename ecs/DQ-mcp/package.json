@@ -1,0 +1,16 @@
+{
+  "name": "DQ-mcp",
+  "type": "module",
+  "version": "0.0.1",
+  "author": "Anton Aleksandrov",
+  "license": "Apache-2.0",
+  "description": "DQ MCP Server",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.1",
+    "aws-sdk": "^2.1692.0",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "log4js": "^6.9.1"
+  },
+  "main": "index.js"
+}
