@@ -2,8 +2,6 @@
 
 This repository contains an AI-powered Data Quality (DQ) Agent that helps users analyze and query data using natural language. The system is built on AWS ECS with a modern microservices architecture for scalability and reliability.
 
-![Architecture](./img/arch.png)
-
 ## 🏗️ Architecture Overview
 
 The DQ Utility AI follows a **modern microservices architecture** built on AWS ECS Fargate with the following design principles:
