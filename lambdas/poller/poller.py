@@ -14,8 +14,7 @@ s3 = boto3.client('s3')
 AGENT_ECS_URL = os.environ.get('AGENT_ECS_URL', 'http://internal-DQUtilityAI-ECS-ALB-1234567890.us-east-1.elb.amazonaws.com')
 POLL_INTERVAL = int(os.environ.get('POLL_INTERVAL_SECONDS', '60'))
 MAX_POLL_HOURS = int(os.environ.get('MAX_POLL_HOURS', '6'))  # Safety cutoff
-
-
+BUCKETNAME = os.environ.get('BUCKETNAME',None) 
 # --- Logging setup ---
 logging.basicConfig(level=logging.INFO, format="%(asctime)s | %(levelname)s | %(message)s")
 logger = logging.getLogger()
@@ -31,7 +30,12 @@ def handler(event, context):
         "reinvoke_on_success": true
     }
     """
-
+    if not BUCKETNAME:
+        logger.error("BUCKETNAME environment variable is not set")
+        return {
+            "status": "error",
+            "reason": "BUCKETNAME not configured"
+        }
     job_name = event.get('job_name')
     run_id = event.get('run_id')
     session_id = event.get('session_id', 'unknown-session')
@@ -118,7 +122,7 @@ def handler(event, context):
     if state == 'SUCCEEDED':
         try:
             # Construct the expected output path based on Glue job pattern
-            base_path = 's3://dq-utlity-ai-durgamj/output/'  # Always use the correct bucket
+            base_path = f"s3://{BUCKETNAME}/output/"  # Always use the correct bucket
             session_path = f"{base_path.rstrip('/')}/session_{session_id}/"
             
             logger.info(f"Looking for Glue job results in: {session_path}")
