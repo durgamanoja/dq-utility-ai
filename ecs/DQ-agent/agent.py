@@ -13,7 +13,6 @@ import hashlib
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 from user import User
 import mcp_client_manager
-import tools
 from agent_config import model, system_prompt
 
 l = logging.getLogger(__name__)
