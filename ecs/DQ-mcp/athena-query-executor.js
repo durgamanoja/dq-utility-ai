@@ -3,7 +3,7 @@ import AWS from 'aws-sdk';
 
 // Initialize STS for role assumption
 const sts = new AWS.STS();
-const CROSS_ACCOUNT_ROLE_ARN = 'arn:aws:iam::752105949551:role/transform-alpha-EMREC2Role';
+const CROSS_ACCOUNT_ROLE_ARN = <'same as existingRole'>;
 
 // Function to get credentials by assuming the cross-account role
 async function getAssumedRoleCredentials() {
