@@ -6,6 +6,10 @@ const lambda = new AWS.Lambda();
 
 const POLLER_LAMBDA_NAME = process.env.POLLER_LAMBDA_NAME || "GlueJobPollerLambda";
 const DEFAULT_GLUE_JOB = process.env.GLUE_JOB_NAME || "agent-run-sql-query"; // ✅ configurable fallback
+const OUTPUT_DATA_BUCKET = process.env.OUTPUTDATABUCKET;
+if (!OUTPUT_DATA_BUCKET) {
+  throw new Error("OUTPUTDATABUCKET environment variable is not set");
+}
 
 const TOOL = [
   "glue-job-trigger",
@@ -25,7 +29,7 @@ const TOOL = [
       const jobArguments = {
         "--sql_query": sqlQuery,
         "--session_id": sessionId || ctx.authInfo?.user_id || "unknown-session",
-        "--output_path": "s3://dq-utlity-ai-durgamj/output/", // Always use the correct bucket
+        "--output_path": `s3://${OUTPUT_DATA_BUCKET}/output/`, // Always use the correct bucket
         ...(jobArgs || {})
       };
 
