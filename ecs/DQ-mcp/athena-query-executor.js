@@ -32,7 +32,7 @@ async function getAssumedRoleCredentials() {
 let athena, s3;
 
 const ATHENA_DATABASE = process.env.ATHENA_DATABASE || 'ap_datamart';
-const ATHENA_OUTPUT_LOCATION = process.env.ATHENA_OUTPUT_LOCATION || 's3://dq-utlity-ai-durgamj/athena-results/';
+const ATHENA_OUTPUT_LOCATION = process.env.ATHENA_OUTPUT_LOCATION || 's3://dq-utility-test/athena-results/';
 const ATHENA_WORKGROUP = process.env.ATHENA_WORKGROUP || 'dq-agent-workgroup'; // ✅ Use our workgroup with service role
 
 const TOOL = [
