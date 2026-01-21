@@ -49,7 +49,7 @@ job.init(args['JOB_NAME'], args)
 try:
     # Get the SQL query from job arguments
     sql_query = args['sql_query']
-    output_path = args.get('output_path', 's3://dq-utlity-ai-durgamj/output/')
+    output_path = args.get('output_path', 's3://dq-utlity-ai-test/output/')
     session_id = args.get('session_id', 'unknown')
     
     print(f"=== Dynamic SQL Executor Started ===")
