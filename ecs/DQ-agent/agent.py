@@ -24,9 +24,6 @@ l.info(f"SESSION_STORE_BUCKET_NAME={SESSION_STORE_BUCKET_NAME}")
 # Initialize S3 client for progress tracking
 s3_client = boto3.client('s3')
 
-# Container-level agent cache to avoid 18+ second agent creation on every request
-_cached_agent_tools_hash = None
-_cached_agent_session_id = None
 
 # In-memory cache for completed job results (persists because ECS Agent is always running)
 _completed_jobs_cache = {}
@@ -203,15 +200,6 @@ def prompt(user: User, composite_prompt: str, websocket_url: str = None, task_id
         update_task_progress_from_agent(task_id, "PROCESSING", "Creating fresh AI agent with your tools...")
         agent_creation_start = time.time()
         
-        # Declare global variable for tools hash tracking
-        global _cached_agent_tools_hash
-        
-        # Create a hash of the tools to detect if they've changed
-        tools_hash = hashlib.md5(str([tools] + mcp_tools).encode()).hexdigest()
-        
-        if _cached_agent_tools_hash != tools_hash:
-            _cached_agent_tools_hash = tools_hash
-
         # ALWAYS create a new Agent per session
         agent = Agent(
             model=model,
@@ -219,7 +207,7 @@ def prompt(user: User, composite_prompt: str, websocket_url: str = None, task_id
             session_manager=session_manager,
             system_prompt=system_prompt,
             callback_handler=None,
-            tools=[tools] + mcp_tools,
+            tools=mcp_tools,
         )
             
         l.info(f"Agent creation took {time.time() - agent_creation_start:.2f}s")
