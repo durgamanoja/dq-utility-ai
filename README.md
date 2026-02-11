@@ -3,45 +3,7 @@
 This repository contains an AI-powered Data Quality (DQ) Agent that helps users analyze and query data using natural language. The system is built on AWS ECS with a modern microservices architecture for scalability and reliability.
 
 ## 🏗️ Architecture Overview
-
-The DQ Utility AI follows a **modern microservices architecture** built on AWS ECS Fargate with the following design principles:
-
-### Architecture Pattern: **Event-Driven Microservices with Async Processing**
-
-```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Web App       │    │   DQ Agent      │    │   MCP Server    │
-│   (ECS Fargate) │◄──►│   (ECS Fargate) │◄──►│   (ECS Fargate) │
-│   Port: 8001    │    │   Port: 8000    │    │   Port: 3001    │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-         │                       │                       │
-         ▼                       ▼                       ▼
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│  Load Balancer  │    │  Load Balancer  │    │  Load Balancer  │
-│  (15min timeout)│    │  (15min timeout)│    │  (15min timeout)│
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-         │                       │                       │
-         └───────────────────────┼───────────────────────┘
-                                 ▼
-                    ┌─────────────────────────┐
-                    │     Shared VPC          │
-                    │   Private Subnets       │
-                    │   NAT Gateway           │
-                    └─────────────────────────┘
-                                 │
-                    ┌────────────┴────────────┐
-                    ▼                         ▼
-         ┌─────────────────┐        ┌─────────────────┐
-         │  Lambda Poller  │        │   AWS Glue      │
-         │  (VPC-enabled)  │◄──────►│   Job Runner    │
-         └─────────────────┘        └─────────────────┘
-                    │                         │
-                    ▼                         ▼
-         ┌─────────────────┐        ┌─────────────────┐
-         │  Amazon Athena  │        │   Amazon S3     │
-         │  (Fast Queries) │        │ (Results/State) │
-         └─────────────────┘        └─────────────────┘
-```
+<img width="1408" height="736" alt="image" src="https://github.com/user-attachments/assets/b51552ab-fd5e-493b-afb1-b0c51534f74f" />
 
 ### Core Services (ECS Fargate)
 
@@ -211,35 +173,6 @@ User Query → Agent → MCP Server → Glue Job → Lambda Poller
                     └─────────────────────────┘
 ```
 
-#### **Real-time Communication Flow**
-
-**1. WebSocket Connection Management**
-```python
-# Web App (FastAPI + WebSocket)
-class ConnectionManager:
-    def __init__(self):
-        self.active_connections: Dict[str, WebSocket] = {}
-        self.user_sessions: Dict[str, str] = {}
-    
-    async def send_to_user(self, username: str, message: dict):
-        # Send real-time updates to specific users
-```
-
-**2. Flask-based Agent API**
-```python
-# ECS Agent (Flask)
-@app.route('/agent', methods=['POST'])
-def agent_endpoint():
-    # Process user queries
-    # Coordinate with MCP Server
-    # Return immediate or async responses
-
-@app.route('/system/glue-result', methods=['POST'])
-def handle_glue_result():
-    # Receive notifications from Lambda Poller
-    # Forward to Web App via WebSocket
-```
-
 #### **Service-to-Service Communication Patterns**
 
 **Pattern 1: Synchronous Request-Response**
@@ -329,35 +262,6 @@ Job Complete → Process → Update UI → Show Results
 10. **WebSocket Push** → Real-time update to user browser
 11. **UI Update** → Gradio refreshes with results
 
-#### **Session & State Management**
-
-**Frontend Session (Web App)**
-```python
-# FastAPI Session Middleware
-app.add_middleware(
-    SessionMiddleware,
-    secret_key=session_secret,
-    max_age=28800,  # 8 hours
-    same_site="lax",
-    https_only=False
-)
-
-# In-memory session store for Gradio compatibility
-session_store = {}
-chat_history_store = {}
-```
-
-**Backend State (ECS Agent)**
-```python
-# S3-based session management
-SESSION_STORE_BUCKET = os.environ.get('SESSION_STORE_BUCKET_NAME')
-
-# User context propagation
-user_context = {
-    "username": jwt_payload.get("username"),
-    "user_id": jwt_payload.get("sub"),
-    "session_id": session_id
-}
 ```
 
 This architecture ensures **seamless communication** between frontend and backend components while maintaining **real-time responsiveness** and **scalable performance** for data quality operations.
@@ -454,10 +358,7 @@ This script will:
 
 ### 5. Access the Application
 
-The web application will be available at the ALB URL provided in the CDK outputs:
-```
-https://DQWebA-WebAp-DiCs4Mz8H49O-1091998012.us-east-1.elb.amazonaws.com
-```
+The web application will be available at the ALB URL provided in the CDK outputs
 
 ## 🔐 Authentication
 
@@ -475,22 +376,79 @@ https://DQWebA-WebAp-DiCs4Mz8H49O-1091998012.us-east-1.elb.amazonaws.com
 
 ### Data Discovery
 ```
-"What tables are available in the ap_datamart database?"
-"Show me the schema for the vendor_master_details table"
+"What tables are available in the fin_datamart database?"
+"Show me the schema for the vendor_details table"
 ```
 
 ### Data Analysis
 ```
-"Get me the record count of vendor_master_details table"
+"Get me the record count of vendor_details table"
 "How many customers are in the customer_data table?"
 "Show me the top 10 vendors by transaction volume"
 ```
 
-### Complex Queries
+### Complex debugging prompts
 ```
-"Analyze sales trends for the last quarter"
-"Find all vendors with more than 1000 transactions"
-"Compare revenue across different regions"
+PROMPT 1: 
+The SQL logic used to populate the AP Summary table is stored at:
+s3://xxx/scripts/xxx/ap_summary.sql
+
+This script is used to load the test table:
+fin_datamart.ap_summary
+
+The corresponding production table is:
+fin_datamart_prod.ap_summary
+
+The primary key for both tables is:
+invoice_id
+
+What I need you to do:
+
+1)         Read and understand the SQL script from the S3 location provided.
+2)         Identify all source and intermediate tables referenced in the script and review their structures using Glue.
+3)         Compare the production and test tables for data from the last 3 days.
+4)         Find invoice_id values that exist in production but are missing in the test table.
+5)         Select 2 sample invoice_id values from these missing records.
+6)         Trace each selected invoice_id through the SQL logic and source tables to determine where and why it was excluded from the final test table.
+
+Final Output
+Please provide:
+The 2 missing invoice_id values
+The table(s) or step(s) in the SQL logic where they were filtered out or dropped
+A clear explanation of the exact condition or join that caused each invoice to be missing
+Be concise, factual, and base your explanation strictly on the SQL logic and table data
+
+PROMPT 2:
+The SQL logic used to populate the AP Summary table is stored at:
+ s3://xxx/scripts/xx/ap_xx_temp.sql
+
+the Airflow DAG that runs this script is in
+s3://xxx/dag_config/alpha/xxx_temp.yml
+
+This script is used to load the test table:
+fin_datamart.ap_xxx_temp
+
+The corresponding production table is:
+fin_datamart_prod.ap_xxx_temp
+
+The primary key for both tables is:
+invoice_id,defect_id,resolved_date
+
+What I need you to do:
+1)         Read and understand the SQL script from the S3 location provided.
+2)         Identify all source and intermediate tables referenced in the script and review their structures using Glue.
+3)         Compare the production and test tables for data from the last 3 days.
+4)         Find invoice_id,defect_id,resolved_date comninations that exist in production but are missing in the test table.
+5)         Select 2 sample primary key values from these missing records.
+6)         Trace each selected primary key through the SQL logic and source tables to determine where and why it was excluded from the final test table.If any source table used in the SQL script is created in the DAG provided ,you must trace that too and give the final result why the primary keys are missed.
+
+Final Output
+Please provide:
+The 2 missing primary key values
+The table(s) or step(s) in the SQL logic where they were filtered out or dropped
+A clear explanation of the exact condition or join that caused each invoice to be missing
+Be concise, factual, and base your explanation strictly on the SQL logic and table data.
+ 
 ```
 
 ## 🔧 Configuration
