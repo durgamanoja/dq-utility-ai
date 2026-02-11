@@ -317,6 +317,7 @@ This architecture ensures **seamless communication** between frontend and backen
 ## 🚀 Deployment Guide
 
 ### Prerequisites
+- Python 3.13 installed locally
 - AWS CLI configured with appropriate permissions
 - Docker installed
 - Node.js 18+ installed
@@ -331,6 +332,10 @@ cd dq_utility_ai
 ### 2. Install Dependencies
 ```bash
 npm install
+```
+### 3. Update AWS credentials:
+```bash
+ ada credentials update --account=xx --provider=conduit --role=IibsAdminAccess-DO-NOT-DELETE --once
 ```
 
 ### 3. Deploy Infrastructure
